@@ -3,57 +3,234 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Profit System</title>
+  <title>TBM Billing</title>
   
+  <!-- Modern Inter Font (Like IG/WhatsApp) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
   <!-- Firebase Compatibility Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: #f4f6f8; color: #333; }
+    :root {
+      --primary-color: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0045ac 100%);
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #1c2b36;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success-bg: #e6f4ea;
+      --success-text: #1b5e20;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      background: var(--bg-color); 
+      color: var(--text-main); 
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 30px;
+    }
+
+    /* Pro App Header (Meta/WhatsApp Style) */
     .header { 
-      background: #17365d; 
+      background: var(--primary-gradient); 
       color: white; 
-      padding: 15px; 
+      padding: 18px 20px; 
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 4px 20px rgba(13, 110, 253, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .header h1 { margin: 0; font-size: 18px; }
-    .header p { margin: 2px 0 0; opacity: 0.85; font-size: 11px; }
     
+    .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+    .header p { opacity: 0.85; font-size: 12px; margin-top: 2px; font-weight: 400; }
+
     .admin-icon-btn { 
-      background: rgba(255, 255, 255, 0.2); 
+      background: rgba(255, 255, 255, 0.15); 
       color: white; 
-      border: 1px solid rgba(255, 255, 255, 0.4); 
-      width: 38px; 
-      height: 38px; 
+      border: 1px solid rgba(255, 255, 255, 0.25); 
+      width: 42px; 
+      height: 42px; 
       border-radius: 50%; 
       cursor: pointer; 
-      font-size: 16px; 
+      font-size: 18px; 
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+    }
+    
+    .admin-icon-btn:active { transform: scale(0.92); }
+
+    .container { max-width: 460px; margin: 20px auto; padding: 0 16px; }
+
+    /* Modern Card UI (Instagram / iOS Style) */
+    .card { 
+      background: var(--card-bg); 
+      border-radius: var(--radius-lg); 
+      padding: 24px; 
+      margin-bottom: 18px; 
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      transition: transform 0.2s ease;
+    }
+    
+    .card-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 18px; letter-spacing: -0.3px; }
+
+    label { display: block; font-weight: 600; margin-top: 14px; font-size: 13px; color: #334155; }
+
+    input[type="text"], input[type="number"], input[type="date"], input[type="password"] { 
+      width: 100%; 
+      padding: 14px 16px; 
+      border: 1.5px solid var(--border-color); 
+      border-radius: var(--radius-md); 
+      margin-top: 6px; 
+      font-size: 14px; 
+      font-family: inherit;
+      color: var(--text-main);
+      background: #fafafa;
+      outline: none;
+      transition: all 0.2s ease;
     }
 
-    .container { max-width: 500px; margin: 15px auto; padding: 0 12px; }
-    .card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-    label { display: block; font-weight: bold; margin-top: 10px; font-size: 13px; }
-    input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 4px; font-size: 14px; }
-    button.submit-btn { width: 100%; border: 0; border-radius: 5px; padding: 12px; font-size: 15px; font-weight: bold; background: #17365d; color: white; margin-top: 15px; cursor: pointer; }
-    .secondary-btn { background: #64748b; color: white; border: 0; border-radius: 5px; padding: 10px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
-    .danger-btn { background: #dc2626; color: white; border: 0; border-radius: 5px; padding: 10px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+    input:focus { 
+      border-color: var(--primary-color); 
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+    }
+
+    /* Segmented Radio Switches (WhatsApp Settings Style) */
+    .radio-group { 
+      display: flex; 
+      gap: 8px; 
+      margin-top: 8px; 
+      background: #f1f5f9; 
+      padding: 4px; 
+      border-radius: var(--radius-md); 
+    }
     
-    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .stat-box { background: #e2f0d9; padding: 12px; border-radius: 6px; text-align: center; }
-    .stat-box small { display: block; font-size: 11px; color: #555; }
-    .stat-box strong { font-size: 18px; color: #17365d; }
+    .radio-label { 
+      flex: 1; 
+      border-radius: 8px; 
+      padding: 10px; 
+      text-align: center; 
+      cursor: pointer; 
+      font-weight: 600; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 6px;
+      margin-top: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .radio-label input { display: none; }
     
-    .bill-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 13px; }
+    .radio-label:has(input:checked) {
+      background: #ffffff;
+      color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    /* Calculation Row */
+    .calc-row { 
+      display: flex; 
+      justify-content: space-between; 
+      padding: 10px 0; 
+      font-size: 13.5px; 
+      border-bottom: 1px dashed var(--border-color); 
+      color: #475569; 
+    }
+    .calc-row:last-child { border-bottom: none; }
+    .calc-row.highlight { font-weight: 700; color: #0f172a; }
+
+    /* Total Payable Box */
+    .payable-box { 
+      background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%); 
+      border-radius: var(--radius-md); 
+      padding: 18px; 
+      text-align: center; 
+      margin-top: 18px; 
+      border: 1px solid #c3e6cb;
+    }
+    .payable-box small { font-size: 11px; font-weight: 700; color: #1e7e34; letter-spacing: 0.8px; display: block; text-transform: uppercase; }
+    .payable-box strong { font-size: 24px; color: #155724; display: block; margin-top: 4px; font-weight: 800; }
+
+    /* Buttons Style */
+    button.submit-btn { 
+      width: 100%; 
+      border: 0; 
+      border-radius: var(--radius-md); 
+      padding: 15px; 
+      font-size: 15px; 
+      font-weight: 700; 
+      background: var(--primary-gradient); 
+      color: white; 
+      margin-top: 18px; 
+      cursor: pointer; 
+      box-shadow: 0 8px 16px rgba(13, 110, 253, 0.25);
+      transition: all 0.2s ease;
+    }
+    
+    button.submit-btn:active { transform: scale(0.98); }
+
+    .secondary-btn { 
+      background: #64748b; 
+      color: white; 
+      border: 0; 
+      border-radius: var(--radius-md); 
+      padding: 13px; 
+      width: 100%; 
+      margin-top: 10px; 
+      font-weight: 600; 
+      font-size: 14px;
+      cursor: pointer; 
+      transition: all 0.2s ease;
+    }
+    .secondary-btn:active { transform: scale(0.98); }
+
+    .danger-btn { 
+      background: #ef4444; 
+      color: white; 
+      border: 0; 
+      border-radius: var(--radius-md); 
+      padding: 13px; 
+      width: 100%; 
+      margin-top: 12px; 
+      font-weight: 600; 
+      font-size: 14px;
+      cursor: pointer; 
+      transition: all 0.2s ease;
+    }
+    .danger-btn:active { transform: scale(0.98); }
+    
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .stat-box { 
+      background: #ffffff; 
+      padding: 16px; 
+      border-radius: var(--radius-md); 
+      text-align: center; 
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .stat-box small { display: block; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .stat-box strong { font-size: 19px; color: var(--primary-color); margin-top: 6px; display: block; font-weight: 800; }
+    
+    .bill-item { border-bottom: 1px solid #f1f5f9; padding: 14px 0; font-size: 13.5px; }
     .bill-item:last-child { border: none; }
+    
     .hidden { display: none !important; }
   </style>
 </head>
@@ -62,7 +239,7 @@
   <div class="header">
     <div>
       <h1 id="app-title">TBM Billing</h1>
-      <p id="app-sub">Doctor Entry Form</p>
+      <p id="app-sub">Doctor / Chemist Portal</p>
     </div>
     <button class="admin-icon-btn" id="toggle-view-btn" onclick="toggleAdminView()" title="Admin Login">🔒</button>
   </div>
@@ -71,25 +248,58 @@
     <!-- Doctor View -->
     <div id="doctor-view">
       <div class="card">
-        <label>Doctor / Party Name</label>
+        <div class="card-title">New Bill Entry</div>
+        
+        <label>Dr./Chemist Name</label>
         <input type="text" id="doc-name" placeholder="Enter name">
         
-        <label>Bill Amount (PKR)</label>
-        <input type="number" id="bill-amount" placeholder="0.00" oninput="calculateProfit()">
+        <label>Date</label>
+        <input type="date" id="bill-date">
         
-        <label>Profit Share (%)</label>
-        <input type="number" id="profit-rate" value="10" oninput="calculateProfit()">
-
-        <div style="margin-top:12px; font-weight:bold; color:#17365d;">
-          Calculated Profit: PKR <span id="calc-profit">0.00</span>
+        <label>Filer Status</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="filer_status" value="filer" checked onchange="calculate()"> Filer
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="filer_status" value="non-filer" onchange="calculate()"> Non-Filer
+          </label>
         </div>
 
-        <button class="submit-btn" onclick="submitBill()">Submit Bill</button>
+        <label>Total Bill Amount (Rs.)</label>
+        <input type="number" id="bill-amount" placeholder="Enter amount" oninput="calculate()">
+
+        <div style="margin-top: 18px;">
+          <div class="calc-row">
+            <span>Tax</span>
+            <span>Rs. <span id="tax-val">0.00</span></span>
+          </div>
+          <div class="calc-row">
+            <span>Dr./Chemist Profit 6.25%</span>
+            <span>Rs. <span id="doc-profit-val">0.00</span></span>
+          </div>
+          <div class="calc-row">
+            <span>Filer Benefit 2%</span>
+            <span>Rs. <span id="filer-benefit-val">0.00</span></span>
+          </div>
+          <div class="calc-row highlight">
+            <span>TBM M. Umair Profit 6.25%</span>
+            <span>Rs. <span id="umair-profit-val">0.00</span></span>
+          </div>
+        </div>
+
+        <div class="payable-box">
+          <small>TOTAL PAYABLE TO TBM M. UMAIR</small>
+          <strong>Rs. <span id="total-payable-val">0.00</span></strong>
+        </div>
+
+        <button class="submit-btn" id="sub-btn" onclick="submitBill()">Submit Bill</button>
       </div>
     </div>
 
     <!-- Admin Login -->
     <div id="admin-login-card" class="card hidden">
+      <div class="card-title">Admin Login</div>
       <label>Enter Admin Passcode</label>
       <input type="password" id="passcode-input" placeholder="Passcode">
       <button class="submit-btn" onclick="checkPasscode()">Unlock Dashboard</button>
@@ -100,23 +310,23 @@
       <div class="stat-grid">
         <div class="stat-box">
           <small>Total Sales</small>
-          <strong id="total-sales">PKR 0</strong>
+          <strong id="total-sales">Rs. 0.00</strong>
         </div>
         <div class="stat-box">
           <small>Total Profit</small>
-          <strong id="total-profit">PKR 0</strong>
+          <strong id="total-profit">Rs. 0.00</strong>
         </div>
       </div>
 
       <div class="card">
-        <h3>Change Passcode</h3>
+        <div class="card-title">Change Passcode</div>
         <label>New Passcode</label>
         <input type="password" id="new-passcode" placeholder="Enter new passcode">
         <button class="secondary-btn" onclick="updatePasscode()">Update Passcode</button>
       </div>
 
       <div class="card">
-        <h3>Live Bill History</h3>
+        <div class="card-title">Live Bill History</div>
         <div id="bill-list">Loading real-time entries...</div>
         <button class="danger-btn" onclick="clearData()">Clear Database History</button>
       </div>
@@ -126,7 +336,6 @@
   </div>
 
   <script>
-    // Firebase Setup
     const firebaseConfig = {
       apiKey: "AIzaSyAqsKb0LhEDjhWrl25CvxUq...",
       authDomain: "tbm-billing.firebaseapp.com",
@@ -134,71 +343,106 @@
       projectId: "tbm-billing",
       storageBucket: "tbm-billing.firebasestorage.app",
       messagingSenderId: "349584224335",
-      appId: "1:349584224335:web:02772af5c278ff72811e3e",
-      measurementId: "G-2J2R8GD7C"
+      appId: "1:349584224335:web:02772af5c278ff72811e3e"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    let db;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch(e) { console.log(e); }
 
+    document.getElementById('bill-date').valueAsDate = new Date();
     let currentPasscode = localStorage.getItem('admin_passcode') || "1234";
     let isAdmin = false;
 
-    function calculateProfit() {
-      const amt = parseFloat(document.getElementById('bill-amount').value) || 0;
-      const rate = parseFloat(document.getElementById('profit-rate').value) || 0;
-      document.getElementById('calc-profit').innerText = ((amt * rate) / 100).toFixed(2);
+    function calculate() {
+      const amount = parseFloat(document.getElementById('bill-amount').value) || 0;
+      const isFiler = document.querySelector('input[name="filer_status"]:checked').value === 'filer';
+
+      const tax = amount * (isFiler ? 0.01 : 0.02);
+      const docProfit = amount * 0.0625;
+      const filerBenefit = isFiler ? (amount * 0.02) : 0;
+      const umairProfit = amount * 0.0625;
+      const totalPayable = amount - docProfit - filerBenefit;
+
+      document.getElementById('tax-val').innerText = tax.toFixed(2);
+      document.getElementById('doc-profit-val').innerText = docProfit.toFixed(2);
+      document.getElementById('filer-benefit-val').innerText = filerBenefit.toFixed(2);
+      document.getElementById('umair-profit-val').innerText = umairProfit.toFixed(2);
+      document.getElementById('total-payable-val').innerText = totalPayable.toFixed(2);
+    }
+
+    function saveLocal(bill) {
+      let localBills = JSON.parse(localStorage.getItem('saved_bills') || '[]');
+      localBills.push(bill);
+      localStorage.setItem('saved_bills', JSON.stringify(localBills));
     }
 
     function submitBill() {
       const name = document.getElementById('doc-name').value.trim();
       const amount = parseFloat(document.getElementById('bill-amount').value);
-      const rate = parseFloat(document.getElementById('profit-rate').value);
+      const date = document.getElementById('bill-date').value;
+      const isFiler = document.querySelector('input[name="filer_status"]:checked').value;
       
       if(!name || !amount) {
         alert('Please fill all fields.');
         return;
       }
 
-      const profit = (amount * rate) / 100;
+      const btn = document.getElementById('sub-btn');
+      btn.innerText = "Submitting...";
+      btn.disabled = true;
+
       const newBill = {
         name: name,
         amount: amount,
-        profit: profit,
-        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        date: date,
+        filerStatus: isFiler,
+        profit: amount * 0.0625,
+        totalPayable: amount - (amount * 0.0625) - (isFiler === 'filer' ? (amount * 0.02) : 0),
+        timestamp: new Date().toISOString()
       };
 
-      db.ref('bills').push(newBill).then(() => {
+      saveLocal(newBill);
+
+      let submitted = false;
+      if(db) {
+        db.ref('bills').push(newBill).then(() => {
+          submitted = true;
+          done();
+        }).catch(err => done());
+      }
+      
+      setTimeout(() => { if(!submitted) done(); }, 2000);
+
+      function done() {
         document.getElementById('doc-name').value = '';
         document.getElementById('bill-amount').value = '';
-        document.getElementById('calc-profit').innerText = '0.00';
-        alert('Bill submitted online successfully!');
-      }).catch(err => alert('Error submitting: ' + err.message));
+        calculate();
+        btn.innerText = "Submit Bill";
+        btn.disabled = false;
+        alert('Bill Submitted Successfully!');
+      }
     }
 
     function toggleAdminView() {
-      if(isAdmin) {
-        logoutAdmin();
-      } else {
+      if(isAdmin) logoutAdmin();
+      else {
         document.getElementById('doctor-view').classList.add('hidden');
         document.getElementById('admin-login-card').classList.remove('hidden');
       }
     }
 
     function checkPasscode() {
-      const input = document.getElementById('passcode-input').value;
-      if(input === currentPasscode) {
+      if(document.getElementById('passcode-input').value === currentPasscode) {
         isAdmin = true;
         document.getElementById('passcode-input').value = '';
         document.getElementById('admin-login-card').classList.add('hidden');
         document.getElementById('admin-view').classList.remove('hidden');
         document.getElementById('toggle-view-btn').innerText = '🚪';
-        document.getElementById('app-title').innerText = 'Admin Dashboard';
-        document.getElementById('app-sub').innerText = 'Live Sales & Profit';
         listenForRealtimeBills();
-      } else {
-        alert('Incorrect passcode!');
-      }
+      } else alert('Incorrect passcode!');
     }
 
     function logoutAdmin() {
@@ -207,16 +451,11 @@
       document.getElementById('admin-login-card').classList.add('hidden');
       document.getElementById('doctor-view').classList.remove('hidden');
       document.getElementById('toggle-view-btn').innerText = '🔒';
-      document.getElementById('app-title').innerText = 'TBM Billing';
-      document.getElementById('app-sub').innerText = 'Doctor Entry Form';
     }
 
     function updatePasscode() {
       const newPass = document.getElementById('new-passcode').value.trim();
-      if(newPass.length < 4) {
-        alert('Passcode must be at least 4 characters long.');
-        return;
-      }
+      if(newPass.length < 4) return alert('Passcode must be 4+ characters.');
       currentPasscode = newPass;
       localStorage.setItem('admin_passcode', currentPasscode);
       document.getElementById('new-passcode').value = '';
@@ -224,36 +463,37 @@
     }
 
     function listenForRealtimeBills() {
-      db.ref('bills').on('value', snapshot => {
-        let sales = 0;
-        let profit = 0;
-        let html = '';
-        const data = snapshot.val();
-
-        if(data) {
-          const billList = Object.values(data).reverse();
-          billList.forEach(b => {
-            sales += b.amount;
-            profit += b.profit;
-            html += `<div class="bill-item">
-              <strong>${b.name}</strong> - PKR ${b.amount} <br>
-              <small>Profit: PKR ${b.profit.toFixed(2)} | Date: ${b.date}</small>
-            </div>`;
-          });
-        }
-
-        document.getElementById('total-sales').innerText = 'PKR ' + sales.toFixed(2);
-        document.getElementById('total-profit').innerText = 'PKR ' + profit.toFixed(2);
+      const render = (dataArr) => {
+        let sales = 0, profit = 0, html = '';
+        dataArr.reverse().forEach(b => {
+          sales += b.amount;
+          profit += (b.profit || 0);
+          html += `<div class="bill-item">
+            <strong>${b.name}</strong> (${b.filerStatus.toUpperCase()}) - Rs. ${b.amount} <br>
+            <small style="color: var(--text-muted)">Umair Profit: Rs. ${b.profit.toFixed(2)} | Date: ${b.date}</small>
+          </div>`;
+        });
+        document.getElementById('total-sales').innerText = 'Rs. ' + sales.toFixed(2);
+        document.getElementById('total-profit').innerText = 'Rs. ' + profit.toFixed(2);
         document.getElementById('bill-list').innerHTML = html || 'No entries found.';
-      });
+      };
+
+      if(db) {
+        db.ref('bills').on('value', snapshot => {
+          const data = snapshot.val();
+          if(data) render(Object.values(data));
+          else render(JSON.parse(localStorage.getItem('saved_bills') || '[]'));
+        });
+      } else render(JSON.parse(localStorage.getItem('saved_bills') || '[]'));
     }
 
     function clearData() {
-      if(confirm('Are you sure you want to delete all cloud data?')) {
-        db.ref('bills').remove();
+      if(confirm('Delete all data?')) {
+        if(db) db.ref('bills').remove();
+        localStorage.removeItem('saved_bills');
       }
     }
   </script>
 </body>
-        </html>
-        
+            </html>
+            
