@@ -16,30 +16,27 @@
     .header { 
       background: #17365d; 
       color: white; 
-      padding: 15px 50px 15px 15px; 
-      text-align: left; 
-      position: relative; 
+      padding: 15px; 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .header h1 { margin: 0; font-size: 20px; }
-    .header p { margin: 2px 0 0; opacity: 0.85; font-size: 12px; }
+    .header h1 { margin: 0; font-size: 18px; }
+    .header p { margin: 2px 0 0; opacity: 0.85; font-size: 11px; }
     
-    /* Chota Compact Icon Button */
     .admin-icon-btn { 
-      position: absolute; 
-      right: 12px; 
-      top: 50%; 
-      transform: translateY(-50%); 
-      background: rgba(255, 255, 255, 0.15); 
+      background: rgba(255, 255, 255, 0.2); 
       color: white; 
-      border: 1px solid rgba(255, 255, 255, 0.3); 
-      width: 36px; 
-      height: 36px; 
+      border: 1px solid rgba(255, 255, 255, 0.4); 
+      width: 38px; 
+      height: 38px; 
       border-radius: 50%; 
       cursor: pointer; 
       font-size: 16px; 
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .container { max-width: 500px; margin: 15px auto; padding: 0 12px; }
@@ -131,7 +128,7 @@
   <script>
     // Firebase Setup
     const firebaseConfig = {
-      apiKey: "AIzaSyAqsKb0LhEDjhWrl25CvxUq...", // Screenshot se auto-configured
+      apiKey: "AIzaSyAqsKb0LhEDjhWrl25CvxUq...",
       authDomain: "tbm-billing.firebaseapp.com",
       databaseURL: "https://tbm-billing-default-rtdb.firebaseio.com",
       projectId: "tbm-billing",
@@ -171,7 +168,6 @@
         date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
       };
 
-      // Push direct to Firebase Cloud
       db.ref('bills').push(newBill).then(() => {
         document.getElementById('doc-name').value = '';
         document.getElementById('bill-amount').value = '';
@@ -259,5 +255,5 @@
     }
   </script>
 </body>
-                                                                       </html>
-                                                                       
+        </html>
+        
