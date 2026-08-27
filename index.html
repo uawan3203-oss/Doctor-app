@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TBM Doctor Entry</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#17365d;}
+.header{background:#17365d;color:white;padding:25px 18px 22px;text-align:center;border-radius:0 0 28px 28px;}
+.header h1{margin:0;font-size:26px;}
+.header p{margin:6px 0 0;opacity:.85;font-size:14px;}
+.container{max-width:500px;margin:auto;padding:18px;}
+.big-card{background:white;border-radius:22px;padding:22px;box-shadow:0 5px 20px rgba(0,0,0,.08);}
+label{display:block;font-weight:bold;margin:15px 0 7px;}
+input,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px;background:white;}
+.status{display:flex;gap:10px;}
+.status label{flex:1;margin:0;padding:14px;background:#f8fafc;border-radius:12px;text-align:center;border:1px solid #ddd;}
+.status input{width:auto;}
+.calc{margin-top:18px;}
+.calc-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e5e7eb;}
+.total-box{background:#e2f0d9;border-radius:18px;padding:20px;margin-top:15px;text-align:center;}
+.total-box small{display:block;font-weight:bold;}
+.total-box strong{display:block;font-size:25px;margin-top:7px;}
+button{width:100%;border:0;border-radius:13px;padding:15px;margin-top:15px;background:#17365d;color:white;font-size:17px;font-weight:bold;}
+.secondary{background:#64748b;}
+.success{display:none;background:#dcfce7;color:#166534;padding:14px;border-radius:12px;margin-top:12px;font-weight:bold;text-align:center;}
+</style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqsKb0LhEDjhWrL25CvxUqU8Z_EKe0XhM",
+    authDomain: "tbm-billing.firebaseapp.com",
+    projectId: "tbm-billing",
+    storageBucket: "tbm-billing.firebasestorage.app",
+    messagingSenderId: "349584224335",
+    appId: "1:349584224335:web:02772af5c278f728113a3a",
+    databaseURL: "https://tbm-billing-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.saveBill = function(){
+    let person = document.getElementById("person").value.trim();
+    let date = document.getElementById("date").value;
+    let bill = Number(document.getElementById("bill").value);
+
+    if(!person || !bill || bill <= 0){
+      alert("Please enter valid name and bill amount.");
+      return;
+    }
+
+    let filer = document.querySelector('input[name="filer"]:checked').value === "filer";
+    let tax = filer ? bill * 0.005 : bill * 0.025;
+    let benefit = filer ? bill * 0.02 : 0;
+    let doctorProfit = bill * 0.0625;
+    let umairProfit = bill * 0.0625;
+    let payable = bill + umairProfit;
+
+    let record = {
+      id: Date.now(),
+      person: person,
+      date: date,
+      filer: filer,
+      bill: bill,
+      tax: tax,
+      benefit: benefit,
+      doctorProfit: doctorProfit,
+      umairProfit: umairProfit,
+      payable: payable,
+      paid: 0,
+      remaining: payable
+    };
+
+    push(ref(db, 'bills'), record).then(() => {
+      document.getElementById("success").style.display = "block";
+      resetForm();
+      setTimeout(() => { document.getElementById("success").style.display = "none"; }, 3000);
+    }).catch(err => alert("Error saving bill: " + err.message));
+  };
+</script>
+</head>
+<body>
+<div class="header">
+    <h1>TBM Billing</h1>
+    <p>Doctor / Chemist Entry</p>
+</div>
+<div class="container">
+    <div class="big-card">
+        <h2>New Bill Entry</h2>
+        <label>Dr./Chemist Name</label>
+        <input id="person" type="text" placeholder="Enter name">
+
+        <label>Date</label>
+        <input id="date" type="date">
+
+        <label>Filer Status</label>
+        <div class="status">
+            <label><input type="radio" name="filer" value="filer" checked onchange="calculate()"> Filer</label>
+            <label><input type="radio" name="filer" value="nonfiler" onchange="calculate()"> Non-Filer</label>
+        </div>
+
+        <label>Total Bill Amount (Rs.)</label>
+        <input id="bill" type="number" min="0" placeholder="Enter amount" oninput="calculate()">
+
+        <div class="calc">
+            <div class="calc-row"><span>Tax</span><b id="tax">Rs. 0.00</b></div>
+            <div class="calc-row"><span>Dr./Chemist Profit 6.25%</span><b id="doctorProfit">Rs. 0.00</b></div>
+            <div class="calc-row" id="benefitRow"><span>Filer Benefit 2%</span><b id="benefit">Rs. 0.00</b></div>
+            <div class="calc-row"><span>TBM M. Umair Profit 6.25%</span><b id="umairProfit">Rs. 0.00</b></div>
+        </div>
+
+        <div class="total-box">
+            <small>TOTAL PAYABLE TO TBM M. UMAIR</small>
+            <strong id="payable">Rs. 0.00</strong>
+        </div>
+
+        <div class="success" id="success">✓ Bill Sent Successfully!</div>
+        <button onclick="saveBill()">✓ SUBMIT BILL</button>
+        <button class="secondary" onclick="resetForm()">CLEAR</button>
+    </div>
+</div>
+<script>
+document.getElementById("date").valueAsDate = new Date();
+function money(v){ return "Rs. " + Number(v||0).toLocaleString("en-PK",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function calculate(){
+    let bill = Number(document.getElementById("bill").value) || 0;
+    let filer = document.querySelector('input[name="filer"]:checked').value === "filer";
+    let tax = filer ? bill * 0.005 : bill * 0.025;
+    let benefit = filer ? bill * 0.02 : 0;
+    let doctorProfit = bill * 0.0625;
+    let umairProfit = bill * 0.0625;
+    let payable = bill + umairProfit;
+    document.getElementById("tax").innerText = money(tax);
+    document.getElementById("benefit").innerText = money(benefit);
+    document.getElementById("doctorProfit").innerText = money(doctorProfit);
+    document.getElementById("umairProfit").innerText = money(umairProfit);
+    document.getElementById("payable").innerText = money(payable);
+}
+function resetForm(){
+    document.getElementById("person").value="";
+    document.getElementById("bill").value="";
+    calculate();
+}
+</script>
+</body>
+</html>
