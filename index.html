@@ -1,352 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TBM Billing System</title>
-<style>
-*{box-sizing:border-box;}
-body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#17365d;}
-.header{background:#17365d;color:white;padding:25px 18px 22px;text-align:center;border-radius:0 0 28px 28px;position:relative;}
-.header h1{margin:0;font-size:26px;}
-.header p{margin:6px 0 0;opacity:.85;font-size:14px;}
-.admin-btn{position:absolute;top:15px;right:15px;background:rgba(255,255,255,0.2);color:white;border:1px solid white;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;}
-.container{max-width:600px;margin:auto;padding:18px;padding-bottom:80px;}
-.page{display:none;}
-.page.active{display:block;}
-.big-card{background:white;border-radius:22px;padding:22px;margin-bottom:16px;box-shadow:0 5px 20px rgba(0,0,0,.08);}
-.big-card h2{margin-top:0;}
-.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.box{background:#f8fafc;border-radius:18px;padding:18px;min-height:90px;}
-.box-title{font-size:12px;font-weight:bold;color:#64748b;}
-.box-value{display:block;margin-top:8px;font-size:18px;font-weight:800;}
-label{display:block;font-weight:bold;margin:15px 0 7px;}
-input,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px;background:white;}
-.status{display:flex;gap:10px;}
-.status label{flex:1;margin:0;padding:14px;background:#f8fafc;border-radius:12px;text-align:center;border:1px solid #ddd;}
-.status input{width:auto;}
-.calc{margin-top:18px;}
-.calc-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e5e7eb;}
-.total-box{background:#e2f0d9;border-radius:18px;padding:20px;margin-top:15px;text-align:center;}
-.total-box small{display:block;font-weight:bold;}
-.total-box strong{display:block;font-size:25px;margin-top:7px;}
-button{width:100%;border:0;border-radius:13px;padding:15px;margin-top:15px;background:#17365d;color:white;font-size:17px;font-weight:bold;cursor:pointer;}
-button.secondary{background:#64748b;}
-button.danger{background:#b91c1c;}
-.history{background:#f8fafc;border:1px solid #e2e8f0;border-radius:17px;padding:16px;margin-bottom:12px;}
-.history h3{margin:0 0 8px;}
-.history p{margin:6px 0;color:#475569;}
-.payment-input{margin-top:12px;}
-.nav{position:fixed;bottom:0;left:0;right:0;background:white;box-shadow:0 -4px 15px rgba(0,0,0,.1);display:flex;justify-content:space-around;z-index:100;}
-.nav button{background:white;color:#64748b;margin:0;border-radius:0;font-size:12px;padding:12px 0;flex:1;}
-.nav button.active{color:#17365d;font-weight:800;}
-.empty{text-align:center;padding:30px 10px;color:#64748b;}
-.success{display:none;background:#dcfce7;color:#166534;padding:14px;border-radius:12px;margin-top:12px;font-weight:bold;text-align:center;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Profit System</title>
+  
+  <!-- Firebase Compatibility Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAqsKb0LhEDjhWrL25CvxUqU8Z_EKe0XhM",
-    authDomain: "tbm-billing.firebaseapp.com",
-    projectId: "tbm-billing",
-    storageBucket: "tbm-billing.firebasestorage.app",
-    messagingSenderId: "349584224335",
-    appId: "1:349584224335:web:02772af5c278f728113a3a",
-    databaseURL: "https://tbm-billing-default-rtdb.firebaseio.com"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  window.billsData = {};
-
-  onValue(ref(db, 'bills'), (snapshot) => {
-    window.billsData = snapshot.val() || {};
-    updateDashboard();
-    displayBills();
-    displayPayments();
-  });
-
-  window.saveBill = function(){
-    let person = document.getElementById("person").value.trim();
-    let date = document.getElementById("date").value;
-    let bill = Number(document.getElementById("bill").value);
-
-    if(!person || !bill || bill <= 0){
-      alert("Please enter Dr./Chemist name and valid amount.");
-      return;
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f4f6f8; color: #333; }
+    
+    .header { 
+      background: #17365d; 
+      color: white; 
+      padding: 15px 50px 15px 15px; 
+      text-align: left; 
+      position: relative; 
+    }
+    .header h1 { margin: 0; font-size: 20px; }
+    .header p { margin: 2px 0 0; opacity: 0.85; font-size: 12px; }
+    
+    /* Chota Compact Icon Button */
+    .admin-icon-btn { 
+      position: absolute; 
+      right: 12px; 
+      top: 50%; 
+      transform: translateY(-50%); 
+      background: rgba(255, 255, 255, 0.15); 
+      color: white; 
+      border: 1px solid rgba(255, 255, 255, 0.3); 
+      width: 36px; 
+      height: 36px; 
+      border-radius: 50%; 
+      cursor: pointer; 
+      font-size: 16px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    let filer = document.querySelector('input[name="filer"]:checked').value === "filer";
-    let tax = filer ? bill * 0.005 : bill * 0.025;
-    let benefit = filer ? bill * 0.02 : 0;
-    let doctorProfit = bill * 0.0625;
-    let umairProfit = bill * 0.0625;
-    let payable = bill + umairProfit;
-
-    let record = {
-      id: Date.now(),
-      person: person,
-      date: date,
-      filer: filer,
-      bill: bill,
-      tax: tax,
-      benefit: benefit,
-      doctorProfit: doctorProfit,
-      umairProfit: umairProfit,
-      payable: payable,
-      paid: 0,
-      remaining: payable
-    };
-
-    push(ref(db, 'bills'), record).then(() => {
-      document.getElementById("success").style.display = "block";
-      resetForm();
-      setTimeout(() => { document.getElementById("success").style.display = "none"; }, 2500);
-    });
-  };
-
-  window.updatePayment = function(key, value){
-    let paid = Number(value) || 0;
-    let b = window.billsData[key];
-    if(!b) return;
-    if(paid > b.payable) paid = b.payable;
-    let remaining = Math.max(b.payable - paid, 0);
-    update(ref(db, 'bills/' + key), { paid: paid, remaining: remaining });
-  };
-
-  window.deleteBill = function(key){
-    if(confirm("Are you sure you want to delete this bill?")){
-      remove(ref(db, 'bills/' + key));
-    }
-  };
-</script>
+    .container { max-width: 500px; margin: 15px auto; padding: 0 12px; }
+    .card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+    label { display: block; font-weight: bold; margin-top: 10px; font-size: 13px; }
+    input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 4px; font-size: 14px; }
+    button.submit-btn { width: 100%; border: 0; border-radius: 5px; padding: 12px; font-size: 15px; font-weight: bold; background: #17365d; color: white; margin-top: 15px; cursor: pointer; }
+    .secondary-btn { background: #64748b; color: white; border: 0; border-radius: 5px; padding: 10px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+    .danger-btn { background: #dc2626; color: white; border: 0; border-radius: 5px; padding: 10px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+    
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .stat-box { background: #e2f0d9; padding: 12px; border-radius: 6px; text-align: center; }
+    .stat-box small { display: block; font-size: 11px; color: #555; }
+    .stat-box strong { font-size: 18px; color: #17365d; }
+    
+    .bill-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 13px; }
+    .bill-item:last-child { border: none; }
+    .hidden { display: none !important; }
+  </style>
 </head>
-
 <body>
 
-<div class="header">
-    <button class="admin-btn" onclick="checkAdmin()">🔒 Admin Login</button>
-    <h1>TBM Billing</h1>
-    <p id="subHeader">Doctor / Chemist Portal</p>
-</div>
+  <div class="header">
+    <div>
+      <h1 id="app-title">TBM Billing</h1>
+      <p id="app-sub">Doctor Entry Form</p>
+    </div>
+    <button class="admin-icon-btn" id="toggle-view-btn" onclick="toggleAdminView()" title="Admin Login">🔒</button>
+  </div>
 
-<div class="container">
+  <div class="container">
+    <!-- Doctor View -->
+    <div id="doctor-view">
+      <div class="card">
+        <label>Doctor / Party Name</label>
+        <input type="text" id="doc-name" placeholder="Enter name">
+        
+        <label>Bill Amount (PKR)</label>
+        <input type="number" id="bill-amount" placeholder="0.00" oninput="calculateProfit()">
+        
+        <label>Profit Share (%)</label>
+        <input type="number" id="profit-rate" value="10" oninput="calculateProfit()">
 
-<!-- DOCTOR SECTION -->
-<section id="docSection" class="page active">
-    <div class="big-card">
-        <h2>New Bill Entry</h2>
-        <label>Dr./Chemist Name</label>
-        <input id="person" type="text" placeholder="Enter name">
-
-        <label>Date</label>
-        <input id="date" type="date">
-
-        <label>Filer Status</label>
-        <div class="status">
-            <label><input type="radio" name="filer" value="filer" checked onchange="calculate()"> Filer</label>
-            <label><input type="radio" name="filer" value="nonfiler" onchange="calculate()"> Non-Filer</label>
+        <div style="margin-top:12px; font-weight:bold; color:#17365d;">
+          Calculated Profit: PKR <span id="calc-profit">0.00</span>
         </div>
 
-        <label>Total Bill Amount (Rs.)</label>
-        <input id="bill" type="number" min="0" placeholder="Enter amount" oninput="calculate()">
+        <button class="submit-btn" onclick="submitBill()">Submit Bill</button>
+      </div>
+    </div>
 
-        <div class="calc">
-            <div class="calc-row"><span>Tax</span><b id="tax">Rs. 0.00</b></div>
-            <div class="calc-row"><span>Dr./Chemist Profit 6.25%</span><b id="doctorProfit">Rs. 0.00</b></div>
-            <div class="calc-row" id="benefitRow"><span>Filer Benefit 2%</span><b id="benefit">Rs. 0.00</b></div>
-            <div class="calc-row"><span>TBM M. Umair Profit 6.25%</span><b id="umairProfit">Rs. 0.00</b></div>
+    <!-- Admin Login -->
+    <div id="admin-login-card" class="card hidden">
+      <label>Enter Admin Passcode</label>
+      <input type="password" id="passcode-input" placeholder="Passcode">
+      <button class="submit-btn" onclick="checkPasscode()">Unlock Dashboard</button>
+    </div>
+
+    <!-- Admin View -->
+    <div id="admin-view" class="hidden">
+      <div class="stat-grid">
+        <div class="stat-box">
+          <small>Total Sales</small>
+          <strong id="total-sales">PKR 0</strong>
         </div>
-
-        <div class="total-box">
-            <small>TOTAL PAYABLE TO TBM M. UMAIR</small>
-            <strong id="payable">Rs. 0.00</strong>
+        <div class="stat-box">
+          <small>Total Profit</small>
+          <strong id="total-profit">PKR 0</strong>
         </div>
+      </div>
 
-        <div class="success" id="success">✓ Bill Sent Successfully!</div>
-        <button onclick="saveBill()">✓ SUBMIT BILL</button>
-        <button class="secondary" onclick="resetForm()">CLEAR</button>
+      <div class="card">
+        <h3>Change Passcode</h3>
+        <label>New Passcode</label>
+        <input type="password" id="new-passcode" placeholder="Enter new passcode">
+        <button class="secondary-btn" onclick="updatePasscode()">Update Passcode</button>
+      </div>
+
+      <div class="card">
+        <h3>Live Bill History</h3>
+        <div id="bill-list">Loading real-time entries...</div>
+        <button class="danger-btn" onclick="clearData()">Clear Database History</button>
+      </div>
+      
+      <button class="secondary-btn" onclick="logoutAdmin()">Exit Admin</button>
     </div>
-</section>
+  </div>
 
-<!-- ADMIN SECTIONS -->
-<section id="adminHome" class="page">
-    <div class="big-card">
-        <h2>Admin Dashboard</h2>
-        <div class="dashboard">
-            <div class="box"><span class="box-title">TOTAL BILLS</span><span class="box-value" id="sBills">0</span></div>
-            <div class="box"><span class="box-title">TOTAL SALES</span><span class="box-value" id="sSales">Rs. 0</span></div>
-            <div class="box"><span class="box-title">UMAIR PROFIT</span><span class="box-value" id="sProfit">Rs. 0</span></div>
-            <div class="box"><span class="box-title">TOTAL PAYABLE</span><span class="box-value" id="sPayable">Rs. 0</span></div>
-            <div class="box"><span class="box-title">TOTAL PAID</span><span class="box-value" id="sPaid">Rs. 0</span></div>
-            <div class="box"><span class="box-title">REMAINING</span><span class="box-value" id="sRemaining">Rs. 0</span></div>
-        </div>
-    </div>
-    <div class="big-card">
-        <button class="secondary" onclick="logoutAdmin()">🔒 Lock Admin Mode</button>
-    </div>
-</section>
+  <script>
+    // Firebase Setup
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqsKb0LhEDjhWrl25CvxUq...", // Screenshot se auto-configured
+      authDomain: "tbm-billing.firebaseapp.com",
+      databaseURL: "https://tbm-billing-default-rtdb.firebaseio.com",
+      projectId: "tbm-billing",
+      storageBucket: "tbm-billing.firebasestorage.app",
+      messagingSenderId: "349584224335",
+      appId: "1:349584224335:web:02772af5c278ff72811e3e",
+      measurementId: "G-2J2R8GD7C"
+    };
 
-<section id="adminHistory" class="page">
-    <div class="big-card">
-        <h2>Bill History</h2>
-        <div id="historyList"></div>
-    </div>
-</section>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-<section id="adminPayments" class="page">
-    <div class="big-card">
-        <h2>Payment Tracking</h2>
-        <div id="paymentList"></div>
-    </div>
-</section>
+    let currentPasscode = localStorage.getItem('admin_passcode') || "1234";
+    let isAdmin = false;
 
-</div>
+    function calculateProfit() {
+      const amt = parseFloat(document.getElementById('bill-amount').value) || 0;
+      const rate = parseFloat(document.getElementById('profit-rate').value) || 0;
+      document.getElementById('calc-profit').innerText = ((amt * rate) / 100).toFixed(2);
+    }
 
-<div class="nav" id="adminNav" style="display:none;">
-    <button id="navHome" class="active" onclick="showAdminPage('adminHome')">🏠<br>Dashboard</button>
-    <button id="navHistory" onclick="showAdminPage('adminHistory')">📋<br>History</button>
-    <button id="navPayments" onclick="showAdminPage('adminPayments')">💰<br>Payments</button>
-    <button onclick="logoutAdmin()">🚪<br>Exit Admin</button>
-</div>
-
-<script>
-document.getElementById("date").valueAsDate = new Date();
-let isAdmin = false;
-
-function money(v){ return "Rs. " + Number(v||0).toLocaleString("en-PK",{minimumFractionDigits:2,maximumFractionDigits:2}); }
-
-function calculate(){
-    let bill = Number(document.getElementById("bill").value) || 0;
-    let filer = document.querySelector('input[name="filer"]:checked').value === "filer";
-    let tax = filer ? bill * 0.005 : bill * 0.025;
-    let benefit = filer ? bill * 0.02 : 0;
-    let doctorProfit = bill * 0.0625;
-    let umairProfit = bill * 0.0625;
-    let payable = bill + umairProfit;
-
-    document.getElementById("tax").innerText = money(tax);
-    document.getElementById("benefit").innerText = money(benefit);
-    document.getElementById("doctorProfit").innerText = money(doctorProfit);
-    document.getElementById("umairProfit").innerText = money(umairProfit);
-    document.getElementById("payable").innerText = money(payable);
-}
-
-function resetForm(){
-    document.getElementById("person").value="";
-    document.getElementById("bill").value="";
-    calculate();
-}
-
-function checkAdmin(){
-    if(isAdmin){
-        showAdminPage('adminHome');
+    function submitBill() {
+      const name = document.getElementById('doc-name').value.trim();
+      const amount = parseFloat(document.getElementById('bill-amount').value);
+      const rate = parseFloat(document.getElementById('profit-rate').value);
+      
+      if(!name || !amount) {
+        alert('Please fill all fields.');
         return;
+      }
+
+      const profit = (amount * rate) / 100;
+      const newBill = {
+        name: name,
+        amount: amount,
+        profit: profit,
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      };
+
+      // Push direct to Firebase Cloud
+      db.ref('bills').push(newBill).then(() => {
+        document.getElementById('doc-name').value = '';
+        document.getElementById('bill-amount').value = '';
+        document.getElementById('calc-profit').innerText = '0.00';
+        alert('Bill submitted online successfully!');
+      }).catch(err => alert('Error submitting: ' + err.message));
     }
-    let code = prompt("Enter Admin Passcode:");
-    if(code === "1234"){
+
+    function toggleAdminView() {
+      if(isAdmin) {
+        logoutAdmin();
+      } else {
+        document.getElementById('doctor-view').classList.add('hidden');
+        document.getElementById('admin-login-card').classList.remove('hidden');
+      }
+    }
+
+    function checkPasscode() {
+      const input = document.getElementById('passcode-input').value;
+      if(input === currentPasscode) {
         isAdmin = true;
-        document.getElementById("subHeader").innerText = "Admin Portal";
-        document.getElementById("adminNav").style.display = "flex";
-        showAdminPage('adminHome');
-    } else if(code !== null) {
-        alert("Incorrect Passcode!");
+        document.getElementById('passcode-input').value = '';
+        document.getElementById('admin-login-card').classList.add('hidden');
+        document.getElementById('admin-view').classList.remove('hidden');
+        document.getElementById('toggle-view-btn').innerText = '🚪';
+        document.getElementById('app-title').innerText = 'Admin Dashboard';
+        document.getElementById('app-sub').innerText = 'Live Sales & Profit';
+        listenForRealtimeBills();
+      } else {
+        alert('Incorrect passcode!');
+      }
     }
-}
 
-function logoutAdmin(){
-    isAdmin = false;
-    document.getElementById("subHeader").innerText = "Doctor / Chemist Portal";
-    document.getElementById("adminNav").style.display = "none";
-    document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
-    document.getElementById("docSection").classList.add("active");
-}
+    function logoutAdmin() {
+      isAdmin = false;
+      document.getElementById('admin-view').classList.add('hidden');
+      document.getElementById('admin-login-card').classList.add('hidden');
+      document.getElementById('doctor-view').classList.remove('hidden');
+      document.getElementById('toggle-view-btn').innerText = '🔒';
+      document.getElementById('app-title').innerText = 'TBM Billing';
+      document.getElementById('app-sub').innerText = 'Doctor Entry Form';
+    }
 
-function showAdminPage(page){
-    if(!isAdmin) return;
-    document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
-    document.getElementById(page).classList.add("active");
-    document.querySelectorAll(".nav button").forEach(x => x.classList.remove("active"));
-    let nav = document.getElementById("nav" + page.replace("admin",""));
-    if(nav) nav.classList.add("active");
-    if(page === 'adminHistory') displayBills();
-    if(page === 'adminPayments') displayPayments();
-    if(page === 'adminHome') updateDashboard();
-}
+    function updatePasscode() {
+      const newPass = document.getElementById('new-passcode').value.trim();
+      if(newPass.length < 4) {
+        alert('Passcode must be at least 4 characters long.');
+        return;
+      }
+      currentPasscode = newPass;
+      localStorage.setItem('admin_passcode', currentPasscode);
+      document.getElementById('new-passcode').value = '';
+      alert('Passcode updated!');
+    }
 
-function displayBills(){
-    let list = document.getElementById("historyList");
-    if(!list) return;
-    let keys = Object.keys(window.billsData || {});
-    if(keys.length === 0){ list.innerHTML = '<div class="empty">No bills saved yet.</div>'; return; }
-    list.innerHTML = "";
-    keys.reverse().forEach(key => {
-        let b = window.billsData[key];
-        let div = document.createElement("div");
-        div.className = "history";
-        div.innerHTML = `
-            <h3>${escapeHTML(b.person)}</h3>
-            <p><b>Date:</b> ${b.date}</p>
-            <p><b>Bill:</b> ${money(b.bill)}</p>
-            <p><b>TBM M. Umair Profit:</b> ${money(b.umairProfit)}</p>
-            <p><b>Total Payable:</b> ${money(b.payable)}</p>
-            <p><b>Paid:</b> ${money(b.paid)}</p>
-            <p><b>Remaining:</b> ${money(b.remaining)}</p>
-            <button class="danger" onclick="deleteBill('${key}')">DELETE BILL</button>
-        `;
-        list.appendChild(div);
-    });
-}
+    function listenForRealtimeBills() {
+      db.ref('bills').on('value', snapshot => {
+        let sales = 0;
+        let profit = 0;
+        let html = '';
+        const data = snapshot.val();
 
-function displayPayments(){
-    let list = document.getElementById("paymentList");
-    if(!list) return;
-    let keys = Object.keys(window.billsData || {});
-    if(keys.length === 0){ list.innerHTML = '<div class="empty">No records.</div>'; return; }
-    list.innerHTML = "";
-    keys.reverse().forEach(key => {
-        let b = window.billsData[key];
-        let div = document.createElement("div");
-        div.className = "history";
-        div.innerHTML = `
-            <h3>${escapeHTML(b.person)}</h3>
-            <p>Total Payable: <b>${money(b.payable)}</b></p>
-            <label>Amount Paid</label>
-            <input class="payment-input" type="number" min="0" max="${b.payable}" value="${b.paid}" onchange="updatePayment('${key}', this.value)">
-            <p>Remaining: <b>${money(b.remaining)}</b></p>
-        `;
-        list.appendChild(div);
-    });
-}
+        if(data) {
+          const billList = Object.values(data).reverse();
+          billList.forEach(b => {
+            sales += b.amount;
+            profit += b.profit;
+            html += `<div class="bill-item">
+              <strong>${b.name}</strong> - PKR ${b.amount} <br>
+              <small>Profit: PKR ${b.profit.toFixed(2)} | Date: ${b.date}</small>
+            </div>`;
+          });
+        }
 
-function updateDashboard(){
-    let keys = Object.keys(window.billsData || {});
-    let sales = 0, profit = 0, payable = 0, paid = 0, remaining = 0;
-    keys.forEach(key => {
-        let b = window.billsData[key];
-        sales += b.bill || 0;
-        profit += b.umairProfit || 0;
-        payable += b.payable || 0;
-        paid += b.paid || 0;
-        remaining += b.remaining || 0;
-    });
-    document.getElementById("sBills").innerText = keys.length;
-    document.getElementById("sSales").innerText = money(sales);
-    document.getElementById("sProfit").innerText = money(profit);
-    document.getElementById("sPayable").innerText = money(payable);
-    document.getElementById("sPaid").innerText = money(paid);
-    document.getElementById("sRemaining").innerText = money(remaining);
-}
+        document.getElementById('total-sales').innerText = 'PKR ' + sales.toFixed(2);
+        document.getElementById('total-profit').innerText = 'PKR ' + profit.toFixed(2);
+        document.getElementById('bill-list').innerHTML = html || 'No entries found.';
+      });
+    }
 
-function escapeHTML(text){
-    return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-}
-
-calculate();
-</script>
+    function clearData() {
+      if(confirm('Are you sure you want to delete all cloud data?')) {
+        db.ref('bills').remove();
+      }
+    }
+  </script>
 </body>
-</html>
+                                                                       </html>
+                                                                       
